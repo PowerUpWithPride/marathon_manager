@@ -1,0 +1,98 @@
+{% extends 'submissions/_layout.html' %}
+{% load bootstrap4 %}
+
+{% block javascript %}
+    <script type="text/javascript">
+        $(() => {
+            // Pronoun multiselect.
+            $('#id_pronouns').multiselect({
+                optionClass: () => {
+                    return 'pronoun-option';
+                },
+            });
+
+            // All day checkboxes.
+            $('.all-day-checkbox').change((event) => {
+                let e = $(event.target);
+                e.closest('.card-body').find('.form-check-input').prop('checked', e.prop('checked'));
+            });
+
+            // Scroll to day header.
+            $('.availability-body').on('shown.bs.collapse', (event) => {
+                let header = $(event.target).closest('.availability-card').find('.availability-header');
+                $('html,body').animate({scrollTop: header.offset().top});
+            });
+        });
+    </script>
+{% endblock %}
+
+{% block content %}
+    {% bootstrap_form_errors forms.profile type='non_fields' %}
+    {% bootstrap_form_errors forms.availability type='non_fields' %}
+
+    <form action="{% url 'submissions:profile' %}" method="post">
+        {% csrf_token %}
+
+        <div class="card my-2">
+            <div class="card-header">
+                <h3 class="card-title">Runner Profile</h3>
+            </div>
+            <div class="card-body">
+                <p>In order to submit runs, please make sure your profile and availability is filled out below.</p>
+                <p>Your selected pronouns will appear in the schedule and on the layout during the event.</p>
+                {% bootstrap_form forms.profile layout='horizontal' %}
+            </div>
+        </div>
+
+        <div class="card my-2">
+            <div class="card-header">
+                <h4 class="card-title">Event Availability</h4>
+            </div>
+            <div class="card-body">
+                <p>Please select below which hours during the event you are available for your runs.</p>
+                <p><strong>Event Start:</strong> {{ event.start_date|date:"l, F j, Y g:i A e" }}</p>
+                <p><strong>Event End:</strong> {{ event.end_date|date:"l, F j, Y g:i A e" }}</p>
+                <div class="accordion" id="availabilityAccordian">
+                    {% for day, fields in forms.availability.fields_by_day.items %}
+                        <div class="row justify-content-center mb-2">
+                            <div class="col-md-4">
+                                <div class="availability-card card">
+                                    <div class="availability-header card-header text-center pointer collapsed"
+                                         data-toggle="collapse" data-target="#collapse-{{ day|date:"Y-m-d" }}"
+                                         aria-expanded="false" aria-controls="collapse-{{ day|date:"Y-m-d" }}">
+                                        <a class="card-title" id="availability-{{ day|date:"Y-m-d" }}">
+                                            {{ day|date:"l, F j" }}</a>
+                                    </div>
+                                    <div id="collapse-{{ day|date:"Y-m-d" }}" class="collapse availability-body"
+                                         aria-labelledby="heading-{{ day|date:"Y-m-d" }}"
+                                         data-parent="#availabilityAccordian">
+                                        <div class="card-body">
+                                            <!--Select all checkbox for this day.-->
+                                            <div class="form-group">
+                                                <div class="form-check"><input type="checkbox"
+                                                                               name="select_all_{{ day|date:"Y_m_d" }}"
+                                                                               class="form-check-input all-day-checkbox"
+                                                                               id="select_all_{{ day|date:"Y_m_d" }}">
+                                                    <label class="form-check-label"
+                                                           for="select_all_{{ day|date:"Y_m_d" }}">
+                                                        <strong>All Day</strong>
+                                                    </label>
+                                                </div>
+                                            </div>
+
+                                            {% for field in fields %}
+                                                {% bootstrap_field field layout='inline' %}
+                                            {% endfor %}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
+        {% buttons submit='Update Profile' %}{% endbuttons %}
+    </form>
+{% endblock %}

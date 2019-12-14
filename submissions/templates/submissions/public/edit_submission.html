@@ -1,0 +1,10 @@
+{% extends 'submissions/public/submit.html' %}
+{% load bootstrap4 %}
+
+{% block header_text %}Edit Submission{% endblock %}
+
+{% block post_url %}{% url 'submissions:edit-submission' submission.pk %}{% endblock %}
+
+{% block back_button %}
+    <a class="btn btn-secondary" href="{% url 'submissions:my-submissions' %}" role="button">Go back</a>
+{% endblock %}

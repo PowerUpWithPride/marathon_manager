@@ -1,0 +1,128 @@
+{% load static %}
+{% load bootstrap4 %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="shortcut icon" type="image/png" href="{% static 'submissions/img/favicon.ico' %}"/>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootswatch/4.3.1/flatly/bootstrap.min.css" id="bootstrap-link">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-multiselect/0.9.15/css/bootstrap-multiselect.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/easy-autocomplete/1.3.5/easy-autocomplete.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.31.1/css/theme.bootstrap_4.min.css">
+    <link rel="stylesheet" href="{% static 'submissions/css/main.css' %}">
+
+    <title>
+        {% if event %}
+            {{ event.name }}
+        {% else %}
+            Marathon
+        {% endif %}
+        Submissions
+    </title>
+</head>
+<body>
+
+<nav class="navbar navbar-expand-md navbar-light bg-light">
+    <!-- Dropdown -->
+    <div class="nav mr-auto dropdown">
+        <a href="#" id="navbarDropdownMenuLink" role="button"
+           data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+            <span class="navbar-toggler-icon"></span>
+        </a>
+        <div class="dropdown-menu">
+            {% if user.is_authenticated %}
+                <div>
+                    <span class="p-2">{{ user.twitch_data.display_name }}</span>
+                    <img class="avatar mr-2" src="{{ user.twitch_data.logo }}"
+                         title="{{ user.twitch_data.display_name }}"
+                         alt="{{ user.twitch_data.display_name }}">
+                </div>
+                <div class="dropdown-divider"></div>
+            {% endif %}
+
+            <a class="dropdown-item" href="{% url 'submissions:home' %}">Home</a>
+
+            {% if user.is_authenticated %}
+                <div class="dropdown-divider"></div>
+                <div class="dropdown-header">Submissions</div>
+                <a class="dropdown-item" href="{% url 'submissions:all-submissions' %}">View All</a>
+                <a class="dropdown-item" href="{% url 'submissions:submit' %}">Submit</a>
+                <a class="dropdown-item" href="{% url 'submissions:my-submissions' %}">My Submissions</a>
+                <div class="dropdown-divider"></div>
+
+                <!-- Admin links -->
+                {% if user.is_staff %}
+                    <div class="dropdown-header">Admin</div>
+                    {# TODO #}
+                    <a class="dropdown-item" href="">Submissions</a>
+                    <a class="dropdown-item" href="">Settings</a>
+                    <div class="dropdown-divider"></div>
+                {% endif %}
+            {% endif %}
+
+            <!-- Dark mode switch -->
+            <div class="dropdown-item custom-control custom-switch">
+                <input type="checkbox" class="custom-control-input" id="darkSwitch">
+                <label class="custom-control-label ml-4 pointer" for="darkSwitch">Dark Mode</label>
+            </div>
+
+            <!-- Login/logout links -->
+            {% if user.is_authenticated %}
+                <a class="dropdown-item" href="{% url 'submissions:profile' %}">Profile &amp; Availability</a>
+                <!-- Show link to Django admin for superusers for convenience. -->
+                {% if user.is_superuser %}
+                    <a class="dropdown-item" href="{% url 'admin:index' %}">Django Admin Site</a>
+                {% endif %}
+                <a class="dropdown-item" href="{% url 'logout' %}">Logout</a>
+            {% else %}
+                <a class="dropdown-item" href="{% url 'social:begin' 'twitch' %}"><i class="fa fa-twitch"></i> Login
+                    with Twitch</a>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Twitch profile pic and logout button if logged in, otherwise show login button -->
+    <div class="nav">
+        {% if user.is_authenticated %}
+            <span class="py-2">{{ user.twitch_data.display_name }}</span>
+            <img class="avatar mt-1 mx-2" src="{{ user.twitch_data.logo }}" title="{{ user.twitch_data.display_name }}"
+                 alt="{{ user.twitch_data.display_name }}">
+            <a href="{% url 'logout' %}" class="btn btn-twitch">Logout</a>
+        {% else %}
+            <a href="{% url 'social:begin' 'twitch' %}" class="btn btn-twitch">
+                <i class="fa fa-twitch"></i> Login with Twitch</a>
+        {% endif %}
+    </div>
+</nav>
+
+<!-- Main body container.  Show Django messages in bootstrap alerts first, then page content. -->
+<div class="{% block container-class %}container{% endblock %} my-2">
+    {% bootstrap_messages %}
+    {% block content %}{% endblock %}
+</div>
+
+<!-- jQuery first, then Popper.js, then Bootstrap JS -->
+<script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"
+        integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1"
+        crossorigin="anonymous"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"
+        integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM"
+        crossorigin="anonymous"></script>
+
+<!-- Extra jQuery/Bootstrap plugins. -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-multiselect/0.9.15/js/bootstrap-multiselect.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/easy-autocomplete/1.3.5/jquery.easy-autocomplete.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.31.1/js/jquery.tablesorter.min.js"></script>
+
+<!-- Dark mode toggle switch JS -->
+<script src="{% static 'submissions/js/dark-mode-switch.js' %}"></script>
+
+<!-- Page-specific JS -->
+{% block javascript %}{% endblock %}
+
+</body>
+</html>

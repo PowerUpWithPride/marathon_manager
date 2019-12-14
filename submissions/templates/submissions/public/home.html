@@ -1,0 +1,44 @@
+{% extends 'submissions/_layout.html' %}
+{% load md2 %}
+
+{% block content %}
+    {% if event %}
+        <!-- Show details and submission guidelines for the current event. -->
+        <div class="card my-2">
+            <div class="card-header">
+                <h3 class="card-title">{{ event.name }}</h3>
+            </div>
+            <div class="card-body">
+                <p><strong>Start:</strong> {{ event.start_date|date:"l, F j, Y g:i A e" }}</p>
+                <p><strong>End:</strong> {{ event.end_date|date:"l, F j, Y g:i A e" }}</p>
+                <p><strong>Maximum number of submissions per runner:</strong>
+                    {{ event.max_games }} game{{ event.max_games|pluralize }}, up to {{ event.max_categories }}
+                    categor{{ event.max_categories|pluralize:"y,ies" }} per game.</p>
+                {% if user.is_authenticated %}
+                    <a href="{% url 'submissions:submit' %}" class="btn btn-success">Submit a run</a>
+                {% else %}
+                    <a href="{% url 'social:begin' 'twitch' %}" class="btn btn-twitch">
+                        <i class="fa fa-twitch"></i> Login with Twitch</a>
+                {% endif %}
+            </div>
+        </div>
+        <div class="card my-2">
+            <div class="card-header">
+                <h4 class="card-title">Submission Guidelines</h4>
+            </div>
+            <div class="card-body" id="submission-guidelines">
+                {{ event.guidelines|markdown:"fenced-code-blocks,tables" }}
+            </div>
+        </div>
+    {% else %}
+        <!-- Show general "no event" message if we don't have one yet. -->
+        <div class="card my-2">
+            <div class="card-header">
+                <h3 class="card-title">Marathon Submissions</h3>
+            </div>
+            <div class="card-body">
+                <p>There are no marathons going on just yet!  Check back later to see if submissions are available.</p>
+            </div>
+        </div>
+    {% endif %}
+{% endblock %}

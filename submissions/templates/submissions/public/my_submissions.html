@@ -1,0 +1,91 @@
+{% extends 'submissions/_layout_fullscreen.html' %}
+{% load bootstrap4 %}
+{% load md2 %}
+
+{% block javascript %}
+    <script type="text/javascript">
+        $(() => {
+            $('#my-submissions-table').tablesorter({
+                sortList: [[0, 0]],
+                theme: "bootstrap"
+            });
+        });
+    </script>
+{% endblock %}
+
+{% block content %}
+    {% if not object_list.exists %}
+        {# User doesn't have any submissions yet. #}
+        {% bootstrap_alert "You don't have any submissions yet!" alert_type='info' dismissible=False %}
+        <a href="{% url 'submissions:submit' %}" class="btn btn-success">Submit a run</a>
+
+    {% else %}
+        {# Show user submissions. #}
+        <div class="card my-2">
+            <div class="card-header">
+                <h3 class="card-title">My Submissions</h3>
+            </div>
+        </div>
+        <div class="table-responsive">
+            <table class="table table-hover" id="my-submissions-table">
+                <thead class="thead-dark">
+                    <tr>
+                        <th scope="col">Game</th>
+                        <th scope="col">Description</th>
+                        {% for _ in max_categories_range %}
+                            <th scope="col" class="text-center">Category {{ forloop.counter }}</th>
+                        {% endfor %}
+                        <th scope="col">Platform</th>
+                        <th scope="col" class="sorter-false"></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for submission in object_list %}
+                        <tr>
+                            <td>{{ submission.game }}</td>
+                            <td class="w-25">{{ submission.description|markdown }}</td>
+
+                            {# Categories for this submission. #}
+                            {% for category in submission.categories.all %}
+                                <td class="text-center
+                                {% if category.status == category.Statuses.ACCEPTED %}
+                                    bg-success text-white
+                                {% elif category.status == category.Statuses.DECLINED %}
+                                    bg-danger text-white
+                                {% endif %}">
+                                    <div>Status: {{ category.status }}</div>
+                                    <div>
+                                        <strong>{{ category.category }}
+                                            {% if category.race %}<i class="fa fa-flag-checkered fa-fw" title="Race/Co-op"></i>{% endif %}
+                                        </strong>
+                                    </div>
+                                    <div>{{ category.estimate }}</div>
+                                    <div>
+                                        <a href="{{ category.video }}" target="_blank" class="btn btn-info">
+                                            <i class="fa fa-film fa-fw" title="Run Video"></i>
+                                        </a>
+                                    </div>
+                                </td>
+                            {% endfor %}
+                            {# Empty category cells for categories that weren't provided. #}
+                            {% for _ in max_categories_range %}
+                                {% if forloop.counter > submission.categories.count %}
+                                    <td class="text-center"></td>
+                                {% endif %}
+                            {% endfor %}
+
+                            <td>{{ submission.platform }}</td>
+                            <td class="text-center">
+                                {% if submission.can_edit %}
+                                    <a class="btn btn-primary" href="{% url 'submissions:edit-submission' submission.id %}" role="button">Edit Submission</a>
+                                    <a class="btn btn-danger" href="{% url 'submissions:delete-submission' submission.id %}" role="button">Delete Submission</a>
+                                {% endif %}
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+    {% endif %}
+{% endblock %}

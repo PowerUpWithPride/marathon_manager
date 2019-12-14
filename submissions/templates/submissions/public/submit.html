@@ -1,0 +1,184 @@
+{% extends 'submissions/_layout.html' %}
+{% load bootstrap4 %}
+
+{% block javascript %}
+    <script type="text/javascript">
+        const SRC_GAME_SEARCH = 'https://www.speedrun.com/api/v1/games';
+
+        // Map some SR.com platform names to abbreviated names we want to use instead.
+        const PLATFORM_MAPPING = {
+            "3DO Interactive Multiplayer": "3DO",
+            "Atari Jaguar": "Jaguar",
+            "Atari Jaguar CD": "Jaguar CD",
+            "Atari Lynx": "Lynx",
+            "Game Boy Advance": "GBA",
+            "Game Boy Color": "GBC",
+            "Nintendo 64": "N64",
+            "Nintendo 3DS": "3DS",
+            "New Nintendo 3DS": "New 3DS",
+            "Nintendo DS": "DS",
+            "Nintendo Entertainment System": "NES",
+            "Philips CD-i": "CD-i",
+            "PlayStation": "PSX",
+            "PlayStation 2": "PS2",
+            "PlayStation 3": "PS3",
+            "PlayStation 4": "PS4",
+            "PlayStation 4 Pro": "PS4",
+            "PlayStation Portable": "PSP",
+            "PlayStation Vita": "PS Vita",
+            "Sega 32X": "32X",
+            "Sega Game Gear": "Game Gear",
+            "Sega Genesis": "Genesis",
+            "Sega Master System": "Master System",
+            "Sega Saturn": "Saturn",
+            "Super Nintendo": "SNES",
+            "TurboGrafx-16 CD-ROM": "Turbo CD",
+            "TurboGrafx-16/PC Engine": "TG-16",
+        };
+
+        $(() => {
+            // Game name autocomplete search.
+            $("#id_game").easyAutocomplete({
+                url: (phrase) => {
+                    return SRC_GAME_SEARCH + '?name=' + encodeURIComponent(phrase) + '&embed=platforms';
+                },
+                getValue: (item) => {
+                    return item["names"]["international"];
+                },
+                listLocation: "data",
+                list: {
+                    maxNumberOfElements: 10,
+                    onChooseEvent: () => {
+                        // Set release year and Twitch name based on selected item.
+                        let item = $("#id_game").getSelectedItemData();
+                        $("#id_release_year").val(item["release-date"].split("-")[0]);
+                        $("#id_twitch_game").val(item["names"]["twitch"]);
+
+                        // Fill in first platform ordered by release date.
+                        if (item["platforms"]["data"].length > 0) {
+                            item["platforms"]["data"].sort((a, b) => {return a["released"] - b["released"]});
+                            let platform = item["platforms"]["data"][0]["name"];
+                            if (PLATFORM_MAPPING[platform]) {
+                                $("#id_platform").val(PLATFORM_MAPPING[platform]);
+                            } else {
+                                $("#id_platform").val(platform);
+                            }
+                        } else {
+                            $("#id_platform").val('');
+                        }
+                    }
+                },
+                minCharNumber: 3,
+                placeholder: "Search...",
+                requestDelay: 500,
+                highlightPhrase: false,
+                cssClasses: "text-primary w-100",
+                theme: "bootstrap"
+            });
+        });
+    </script>
+{% endblock %}
+
+{% block content %}
+    {% if event.stage == event.Stages.NOT_OPEN %}
+        {# Submissions not open yet. #}
+        {% bootstrap_alert 'Sorry, submissions are not open yet!  Please come back later.' alert_type='info' dismissible=False %}
+        <a class="btn btn-primary" href="{% url 'submissions:home' %}" role="button">Back</a>
+
+    {% elif event.stage == event.Stages.CLOSED %}
+        {# Submissions are closed. #}
+        {% bootstrap_alert 'Sorry, submissions for this event are closed!' alert_type='info' dismissible=False %}
+        <a class="btn btn-primary" href="{% url 'submissions:home' %}" role="button">Back</a>
+
+    {% elif not edit_mode and user_submissions >= event.max_games %}
+        {# User has reached the submission limit. #}
+        {% bootstrap_alert 'Sorry, you have reached the limit on the number of submissions for this event!' alert_type='danger' dismissible=False %}
+        <a class="btn btn-primary" href="{% url 'submissions:home' %}" role="button">Back</a>
+
+    {% elif edit_mode and event.stage == event.Stages.LOCKED %}
+        {# Submissions are locked (cannot edit). #}
+        {% bootstrap_alert 'Sorry, submissions are locked and cannot be edited.' alert_type='info' dismissible=False %}
+        <a class="btn btn-primary" href="{% url 'submissions:my-submissions' %}" role="button">Back</a>
+
+    {% else %}
+        {# User has not reached the submission limit yet, show the form. #}
+        {% if forms.game.errors or forms.categories.total_error_count %}
+            {% bootstrap_alert 'There is one or more problems with your submission.  Please correct the errors below and try again.' alert_type='danger' %}
+        {% endif %}
+
+        {% bootstrap_form_errors forms.game type='non_fields' %}
+        {% for form in forms.categories %}
+            {% bootstrap_form_errors form type='non_fields' %}
+        {% endfor %}
+
+        <form action="{% block post_url %}{% url 'submissions:submit' %}{% endblock %}" method="post">
+            {% csrf_token %}
+
+            <div class="card my-2">
+                <div class="card-header">
+                    <h3 class="card-title">{% block header_text %}Submit a Run{% endblock %}</h3>
+                </div>
+                <div class="card-body">
+                    {% if not edit_mode %}
+                        <p>Please fill out the game information for your submission, and individual categories below.</p>
+                        <p>The game search will use Speedrun.com to autopopulate the Twitch name, release year, and
+                            platform.  You can search by full game name or common abbreviations such as "smb3".
+                        </p>
+
+                        {# Show current availability so the user is aware and can change it if it's not correct. #}
+                        <p><strong>NOTE:</strong> You must have a big enough availability window for any estimates!  Your
+                            current availability is as follows:
+                        </p>
+                        <ul>
+                        {% for availability in user.current_event_availabilities %}
+                            <li>{{ availability.start_time|date:'l, F j g:i A e' }} to {{ availability.end_time|date:'l, F j g:i A e' }}</li>
+                        {% endfor %}
+                        </ul>
+                        <p>If this is not correct, please <a href="{% url 'submissions:profile' %}">update your profile here</a>.</p>
+                    {% endif %}
+
+                    {# Actual form fields. #}
+                    <div class="row">
+                        {% bootstrap_field forms.game.game form_group_class='form-group col-md-4' %}
+                        {% bootstrap_field forms.game.platform form_group_class='form-group col-md-4' %}
+                        {% bootstrap_field forms.game.release_year form_group_class='form-group col-md-4' %}
+                    </div>
+                    <div class="row">
+                        {% bootstrap_field forms.game.twitch_game form_group_class='form-group col-md-4' %}
+                    </div>
+                    {% bootstrap_field forms.game.description layout='horizontal' %}
+                </div>
+            </div>
+
+            <div class="card my-2">
+                <div class="card-header">
+                    <h4 class="card-title">Categories</h4>
+                </div>
+                <div class="card-body">
+                    <p>You may submit up to {{ event.max_categories }} categor{{ event.max_categories|pluralize:"y,ies" }}
+                        for this game. Leave all the fields blank for any categories not being submitted.
+                    </p>
+                    {% for form in forms.categories %}
+                        <div class="card my-2">
+                            <div class="card-header card-title">Category {{ forloop.counter }}</div>
+                            <div class="card-body">
+                                <div class="row">
+                                    {% bootstrap_field form.category form_group_class='form-group col-md-4' %}
+                                    {% bootstrap_field form.estimate form_group_class='form-group col-md-4' %}
+                                    {% bootstrap_field form.video form_group_class='form-group col-md-4' %}
+                                </div>
+                                <div class="row">
+                                    {% bootstrap_field form.race form_group_class='form-group col-md-4' %}
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            {% bootstrap_button 'Submit' 'submit' %}
+            {% block back_button %}{% endblock %}
+            {{ forms.categories.management_form }}
+        </form>
+    {% endif %}
+{% endblock %}

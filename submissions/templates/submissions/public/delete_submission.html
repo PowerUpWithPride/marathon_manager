@@ -1,0 +1,20 @@
+{% extends 'submissions/_layout.html' %}
+{% load bootstrap4 %}
+
+{% block content %}
+    <div class="card my-2">
+        <div class="card-header">
+            <h3 class="card-title">Delete Submission</h3>
+        </div>
+        <div class="card-body">
+            <p><strong>WARNING:</strong> You are about to delete your submission for:
+                <strong>{{ submission.game }}</strong></p>
+            <p>Once you do this, it cannot be recovered.  Are you <strong>sure</strong> you want to do this?</p>
+            <form action="{% url 'submissions:delete-submission' submission.pk %}" method="post">
+                {% csrf_token %}
+                {% bootstrap_button "Yes, I'm sure" 'submit' 'btn-danger' %}
+                <a class="btn btn-primary" href="{% url 'submissions:my-submissions' %}" role="button">No, go back</a>
+            </form>
+        </div>
+    </div>
+{% endblock %}
