@@ -5,9 +5,10 @@
 {% block javascript %}
     <script type="text/javascript">
         $(() => {
-            $('#my-submissions-table').tablesorter({
-                sortList: [[0, 0]],
-                theme: "bootstrap"
+            $('#my-submissions-table').DataTable({
+                "order": [[0, 'asc']],
+                "paging": false,
+                "searching": false
             });
         });
     </script>
@@ -28,7 +29,7 @@
         </div>
         <div class="table-responsive">
             <table class="table table-hover" id="my-submissions-table">
-                <thead class="thead-dark">
+                <thead>
                     <tr>
                         <th scope="col">Game</th>
                         <th scope="col">Description</th>
@@ -36,7 +37,7 @@
                             <th scope="col" class="text-center">Category {{ forloop.counter }}</th>
                         {% endfor %}
                         <th scope="col">Platform</th>
-                        <th scope="col" class="sorter-false"></th>
+                        <th scope="col" data-orderable="false"></th>
                     </tr>
                 </thead>
                 <tbody>
