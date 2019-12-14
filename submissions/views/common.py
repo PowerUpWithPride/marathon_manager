@@ -63,8 +63,8 @@ class SubmissionViewMixIn:
         self.extra_context = {
             'event': self.event,
             # Add ranges for max number of games and categories for templates to use in loops.
-            'max_games_range': range(self.event.max_games),
-            'max_categories_range': range(self.event.max_categories),
+            'max_games_range': range(self.event.max_games if self.event else 0),
+            'max_categories_range': range(self.event.max_categories if self.event else 0),
         }
 
         # Clear redirect to submit flag for most pages.
