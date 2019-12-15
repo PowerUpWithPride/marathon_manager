@@ -97,6 +97,11 @@ class Availability(models.Model):
         """End time is a dynamically computed property based on start time and available duration."""
         return self.start_time + self.duration
 
+    @property
+    def hours(self):
+        """Number of hours in the duration."""
+        return int(self.duration.total_seconds() / 60 / 60)
+
     def __str__(self):
         return '{} to {}'.format(self.start_time.astimezone(get_current_timezone()).strftime('%A, %B %d %I:%M %p'),
                                  self.end_time.astimezone(get_current_timezone()).strftime('%A, %B %d %I:%M %p'))

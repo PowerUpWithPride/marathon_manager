@@ -131,7 +131,10 @@
                         </p>
                         <ul>
                         {% for availability in user.current_event_availabilities %}
-                            <li>{{ availability.start_time|date:'l, F j g:i A e' }} to {{ availability.end_time|date:'l, F j g:i A e' }}</li>
+                            <li>
+                                {{ availability.start_time|date:'l, F j g:i A e' }} to {{ availability.end_time|date:'l, F j g:i A e' }}
+                                ({{ availability.hours }} hour{{ availability.hours|pluralize }})
+                            </li>
                         {% endfor %}
                         </ul>
                         <p>If this is not correct, please <a href="{% url 'submissions:profile' %}">update your profile here</a>.</p>
