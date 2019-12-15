@@ -27,7 +27,7 @@ class ProfileForm(forms.Form):
     pronouns = forms.MultipleChoiceField(label=_('Pronouns'), choices=[(x, x) for x in PRONOUN_CHOICES],
                                          help_text=_("You can select more than one option!  If you don't have "
                                                      "preferred pronouns or prefer not to say, please select that "
-                                                     "option so we know!  If you have a preferred pronoun that isn't"
+                                                     "option so we know!  If you have a preferred pronoun that isn't "
                                                      "listed here, please let us know and we'll add it!"))
 
 
