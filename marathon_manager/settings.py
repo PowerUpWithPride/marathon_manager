@@ -45,6 +45,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'bootstrap4',
+    'tempus_dominus',
     'django_markdown2',
     'social_django',
     'submissions.apps.SubmissionsConfig',
@@ -190,6 +191,11 @@ LOGOUT_REDIRECT_URL = 'submissions:home'
 
 STATIC_URL = local.STATIC_URL
 STATIC_ROOT = local.STATIC_ROOT
+
+
+# Tempus Dominus library settings.
+TEMPUS_DOMINUS_LOCALIZE = False
+TEMPUS_DOMINUS_INCLUDE_ASSETS = False
 
 
 # Twitch login settings.  Get display name and profile pic as extra data to show here.
