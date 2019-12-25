@@ -34,8 +34,8 @@ class ProfileView(SubmissionViewMixIn, FixedMultiFormView):
     clear_redirect_to_submit = False
     template_name = 'submissions/public/profile.html'
     form_classes = {
-        'profile': forms.runners.ProfileForm,
-        'availability': forms.runners.AvailabilityForm,
+        'profile': forms.public.ProfileForm,
+        'availability': forms.public.AvailabilityForm,
     }
 
     def get_success_url(self):
@@ -132,8 +132,8 @@ class SubmitView(SubmissionViewMixIn, FixedMultiFormView):
         # Initialize category formset factory based on max number of categories per game for the event.
         max_cat = self.event.max_categories
         self.form_classes = {
-            'game': forms.runners.SubmitGameForm,
-            'categories': formset_factory(forms.runners.SubmitCategoryForm, extra=max_cat, max_num=max_cat,
+            'game': forms.public.SubmitGameForm,
+            'categories': formset_factory(forms.public.SubmitCategoryForm, extra=max_cat, max_num=max_cat,
                                           validate_max=True, min_num=1, validate_min=True, can_delete=True),
         }
 
