@@ -17,4 +17,5 @@ urlpatterns = [
     path('submissions/delete/<int:pk>', views.public.DeleteSubmissionView.as_view(), name='delete-submission'),
 
     # Admin views
+    path('admin/settings', views.admin.SettingsView.as_view(), name='admin-settings'),
 ]

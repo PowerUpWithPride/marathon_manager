@@ -1,0 +1,20 @@
+{% extends 'submissions/_layout.html' %}
+{% load bootstrap4 %}
+
+{% block content %}
+    <form action="{% url 'submissions:admin-settings' %}" method="post">
+        {% csrf_token %}
+        <div class="card my-2">
+            <div class="card-header">
+                <h3 class="card-title">Current Event Settings</h3>
+            </div>
+            <div class="card-body">
+                {% bootstrap_form form layout='horizontal' %}
+                {% bootstrap_button 'Update Event' 'submit' %}
+                <a class="btn btn-secondary" href="{% url 'submissions:home' %}" role="button">Back</a>
+            </div>
+        </div>
+    </form>
+{% endblock %}
+
+
