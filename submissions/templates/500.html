@@ -1,0 +1,6 @@
+{% extends 'submissions/_layout.html' %}
+{% load bootstrap4 %}
+
+{% block content %}
+    {% bootstrap_alert "Uh oh, something done blowed up...  We'd appreciate it if you let the marathon staff know and we'll fix it ASAP!" alert_type="danger" dismissible=False %}
+{% endblock %}
