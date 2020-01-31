@@ -4,13 +4,12 @@ import datetime
 import logging
 
 from django.contrib import messages
-from django.contrib.auth.decorators import login_required
+from django.contrib.auth.mixins import LoginRequiredMixin
 from django.db import transaction
 from django.db.models import Prefetch
 from django.forms import formset_factory
 from django.shortcuts import redirect
 from django.urls import reverse
-from django.utils.decorators import method_decorator
 from django.utils.timezone import get_current_timezone
 from django.utils.translation import gettext as _
 from django.views.generic import TemplateView, ListView, DeleteView
@@ -28,8 +27,7 @@ class HomeView(SubmissionViewMixIn, TemplateView):
     template_name = 'submissions/public/home.html'
 
 
-@method_decorator(login_required, name='dispatch')
-class ProfileView(SubmissionViewMixIn, FixedMultiFormView):
+class ProfileView(LoginRequiredMixin, SubmissionViewMixIn, FixedMultiFormView):
     """User profile and availability."""
     clear_redirect_to_submit = False
     template_name = 'submissions/public/profile.html'
@@ -91,16 +89,14 @@ class ProfileView(SubmissionViewMixIn, FixedMultiFormView):
         return super().forms_valid(forms)
 
 
-@method_decorator(login_required, name='dispatch')
-class MySubmissionsView(SubmissionViewMixIn, ListView):
+class MySubmissionsView(LoginRequiredMixin, SubmissionViewMixIn, ListView):
     template_name = 'submissions/public/my_submissions.html'
 
     def get_queryset(self):
         return self.request.user.current_event_submissions
 
 
-@method_decorator(login_required, name='dispatch')
-class AllSubmissionsView(SubmissionViewMixIn, ListView):
+class AllSubmissionsView(LoginRequiredMixin, SubmissionViewMixIn, ListView):
     template_name = 'submissions/public/all_submissions.html'
 
     def get_queryset(self):
@@ -110,8 +106,7 @@ class AllSubmissionsView(SubmissionViewMixIn, ListView):
                                    UserSocialAuth.objects.filter(provider='twitch'), to_attr='twitch_auth'))
 
 
-@method_decorator(login_required, name='dispatch')
-class SubmitView(SubmissionViewMixIn, FixedMultiFormView):
+class SubmitView(LoginRequiredMixin, SubmissionViewMixIn, FixedMultiFormView):
     """Submit a run view."""
     template_name = 'submissions/public/submit.html'
     edit_mode = False
@@ -214,6 +209,7 @@ class SubmitView(SubmissionViewMixIn, FixedMultiFormView):
 
 
 class EditSubmissionView(SubmissionViewSingleObjectMixIn, SubmitView):
+    """Edit existing submissions, subclassing from SubmitView to reuse functionality."""
     template_name = 'submissions/public/edit_submission.html'
     context_object_name = 'submission'
     edit_mode = True
@@ -275,7 +271,7 @@ class EditSubmissionView(SubmissionViewSingleObjectMixIn, SubmitView):
         return reverse('submissions:my-submissions')
 
 
-class DeleteSubmissionView(SubmissionViewMixIn, DeleteView):
+class DeleteSubmissionView(LoginRequiredMixin, SubmissionViewMixIn, DeleteView):
     template_name = 'submissions/public/delete_submission.html'
     context_object_name = 'submission'
 
