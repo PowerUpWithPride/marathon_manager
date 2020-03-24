@@ -57,8 +57,7 @@
                 <!-- Admin links -->
                 {% if user.is_staff %}
                     <div class="dropdown-header">Admin</div>
-                    {# TODO #}
-                    <a class="dropdown-item" href="">Submissions</a>
+                    <a class="dropdown-item" href="{% url 'submissions:admin-submissions' %}">Submissions</a>
                     <a class="dropdown-item" href="{% url 'submissions:admin-settings' %}">Settings</a>
                     <div class="dropdown-divider"></div>
                 {% endif %}

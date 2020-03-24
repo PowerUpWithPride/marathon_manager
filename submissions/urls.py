@@ -18,4 +18,5 @@ urlpatterns = [
 
     # Admin views
     path('admin/settings', views.admin.SettingsView.as_view(), name='admin-settings'),
+    path('admin/submissions', views.admin.SubmissionsView.as_view(), name='admin-submissions'),
 ]

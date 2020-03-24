@@ -1,0 +1,101 @@
+{% extends 'submissions/_layout_fullscreen.html' %}
+{% load bootstrap4 %}
+{% load md2 %}
+
+{% block javascript %}
+    <script type="text/javascript">
+        $(() => {
+            $('#admin-submissions-table').DataTable({
+                "order": [[0, 'asc'], [1, 'asc']],
+                "lengthMenu": [[25, 50, 100, 250, -1], [25, 50, 100, 250, "All"]],
+                "stateSave": true
+            });
+        });
+    </script>
+{% endblock %}
+
+{% block content %}
+    {% if not object_list.exists %}
+        {# Event doesn't have any submissions yet. #}
+        {% bootstrap_alert "There are no submissions yet." alert_type='info' dismissible=False %}
+
+    {% else %}
+        {# Show user submissions. #}
+        <div class="card my-2">
+            <div class="card-header">
+                <h3 class="card-title">Submissions Admin</h3>
+            </div>
+        </div>
+        <div class="table-responsive">
+            <table class="table table-hover" id="admin-submissions-table">
+                <thead>
+                    <tr>
+                        <th scope="col">Runner</th>
+                        <th scope="col">Game</th>
+                        <th scope="col">Description</th>
+                        <th scope="col">categories</th>
+                        <th scope="col">Platform</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for submission in object_list %}
+                        <tr>
+                            <td class="text-center">
+                                <p>
+                                    <img class="avatar" src="{{ submission.user.twitch_auth.0.extra_data.logo }}"
+                                         title="{{ submission.user.twitch_auth.0.extra_data.display_name }}"
+                                         alt="{{ submission.user.twitch_auth.0.extra_data.display_name }}">
+                                    {{ submission.user.twitch_auth.0.extra_data.display_name }}
+                                </p>
+                                <p>
+                                    <a href="https://twitch.tv/{{ submission.user.twitch_auth.0.extra_data.name }}"
+                                       target="_blank" class="btn btn-twitch">
+                                        <i class="fa fa-twitch fa-fw" title="User Stream"></i>
+                                    </a>
+                                </p>
+                                <ul>
+                                    {% for availability in submission.user.current_event_availabilities %}
+                                        <li>
+                                            {{ availability.start_time|date:'l, F j g:i A e' }}
+                                            to {{ availability.end_time|date:'l, F j g:i A e' }}
+                                            ({{ availability.hours }} hour{{ availability.hours|pluralize }})
+                                        </li>
+                                    {% endfor %}
+                                </ul>
+                            </td>
+                            <td>{{ submission.game }}</td>
+                            <td class="w-25">{{ submission.description|markdown }}</td>
+
+                            {# Categories for this submission. #}
+                            <td>
+                            {% for category in submission.categories.all %}
+                                <td class="text-center
+                                {% if category.status == category.Statuses.ACCEPTED %}
+                                    bg-success text-white
+                                {% elif category.status == category.Statuses.DECLINED %}
+                                    bg-danger text-white
+                                {% endif %}">
+                                    <div>Status: {{ category.status }}</div>
+                                    <div>
+                                        <strong>{{ category.category }}
+                                            {% if category.race %}<i class="fa fa-flag-checkered fa-fw" title="Race/Co-op"></i>{% endif %}
+                                        </strong>
+                                    </div>
+                                    <div>{{ category.estimate }}</div>
+                                    <div>
+                                        <a href="{{ category.video }}" target="_blank" class="btn btn-info">
+                                            <i class="fa fa-film fa-fw" title="Run Video"></i>
+                                        </a>
+                                    </div>
+                                </td>
+                            {% endfor %}
+                            </td>
+                            <td>{{ submission.platform }}</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+    {% endif %}
+{% endblock %}

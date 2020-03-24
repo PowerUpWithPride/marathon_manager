@@ -4,12 +4,14 @@ import logging
 
 from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMixin
+from django.db.models import Prefetch
 from django.http import HttpResponseRedirect
 from django.urls import reverse
 from django.utils.translation import gettext as _
-from django.views.generic import UpdateView
+from django.views.generic import UpdateView, ListView
+from social_django.models import UserSocialAuth
 
-from submissions import forms
+from submissions import forms, models
 from submissions.views.common import SubmissionViewMixIn
 
 logger = logging.getLogger(__name__)
@@ -41,3 +43,16 @@ class SettingsView(AdminViewMixIn, UpdateView):
 
     def get_success_url(self):
         return reverse('submissions:admin-settings')
+
+
+class SubmissionsView(AdminViewMixIn, ListView):
+    template_name = 'submissions/admin/submissions.html'
+
+    def get_queryset(self):
+        return models.Submission.objects.filter(event=self.event).select_related(
+            'event', 'user', 'user__profile').prefetch_related(
+            'categories', Prefetch('user__social_auth',
+                                   UserSocialAuth.objects.filter(provider='twitch'), to_attr='twitch_auth'),
+            Prefetch('user__availabilities', models.Availability.objects.filter(event=self.event),
+                     to_attr='current_event_availabilities')
+        )
